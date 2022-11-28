@@ -1,12 +1,17 @@
+import { NavigationContainer } from '@react-navigation/native';
 import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
+import HomePage from './pages/home-page';
+import Navigation from './pages/navigation';
+import UserInfoPage from './pages/user-info-page';
+
 
 export default function App() {
   return (
-    <View style={styles.container}>
-      <Text>Open up App.js to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
+    <NavigationContainer>
+      <Navigation/>
+    </NavigationContainer>
+
   );
 }
 
