@@ -1,10 +1,17 @@
-import { StyleSheet, Text, View, Button, TextInput, ScrollView } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Button,
+  TextInput,
+  ScrollView,
+} from "react-native";
 import SocialLinkButton from "../components/social-link-button";
 import SocialLinkAdd from "../components/social-link-add";
 import { Formik } from "formik";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useState, useEffect } from "react";
-import { Linking } from 'react-native'
+import { Linking } from "react-native";
 
 function UserInfoPage(props) {
   //state variable for an array of social links
@@ -80,55 +87,51 @@ function UserInfoPage(props) {
       {/* <SocialLinkAdd /> */}
 
       {/* create a basic form with formik */}
-      <Formik
-        initialValues={{ platformName: "", link: "" }}
-        onSubmit={(values) => {
-          storeData(values.platformName, values.link);
-          // getData(values.platformName);
-          // removeValue();
-          //empty the state variable for social links
-          // setSocialLinks([]);
-        }}
-      >
-        {(props) => (
-          // create a view to hold the form elements
-          <View style={styles.linkStyle}>
-            <TextInput
-              style={styles.input}
-              placeholder="Platform Name"
-              onChangeText={props.handleChange("platformName")}
-              value={props.values.platformName}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Link"
-              onChangeText={props.handleChange("link")}
-              value={props.values.link}
-            />
-            <Button
-              title="Submit"
-              color="maroon"
-              onPress={props.handleSubmit}
-            />
-          </View>
-        )}
-      </Formik>
+      <View style={styles.formArea}>
+        <Formik
+          initialValues={{ platformName: "", link: "" }}
+          onSubmit={(values) => {
+            storeData(values.platformName, values.link);
+            // getData(values.platformName);
+            // removeValue();
+            //empty the state variable for social links
+            // setSocialLinks([]);
+          }}
+        >
+          {(props) => (
+            // create a view to hold the form elements
+            <View>
+              <TextInput
+                style={styles.formInput}
+                placeholder="Platform Name"
+                onChangeText={props.handleChange("platformName")}
+                value={props.values.platformName}
+              />
+              <TextInput
+                style={styles.formInput}
+                placeholder="Link"
+                onChangeText={props.handleChange("link")}
+                value={props.values.link}
+              />
+              <Button
+                style={styles.formButton}
+                title="Submit"
+                color="maroon"
+                onPress={props.handleSubmit}
+              />
+            </View>
+          )}
+        </Formik>
+      </View>
 
       {/* //map through the counter array and create a new social link button for each element */}
       <View>
         <ScrollView>
-        {socialLinks.map(
-          (userInfo) => (
-            (
-              <View key={userInfo[0]}>
-                <SocialLinkButton
-                  platform={userInfo[0]}
-                  redirect={userInfo[1]}
-                />
-              </View>
-            )
-          )
-        )}
+          {socialLinks.map((userInfo) => (
+            <View key={userInfo[0]}>
+              <SocialLinkButton platform={userInfo[0]} redirect={userInfo[1]} />
+            </View>
+          ))}
         </ScrollView>
       </View>
 
@@ -211,15 +214,17 @@ const styles = StyleSheet.create({
     backgroundColor: "lime",
     //   fontFamily: "Poppins",
   },
-  linkStyle: {
-    flexDirection: "column",
-    justifyContent: "space-between",
-    height: 50,
-    borderWidth: 2,
+  formArea: {
+    width: "100%",
+  },
+  formInput: {
+    borderWidth: 1,
+    borderColor: "black",
+    padding: 10,
+    width: "80%",
+    marginBottom: 10,
     borderRadius: 10,
-    marginBottom: 20,
-    paddingTop: 4,
-    backgroundColor: "#FFF0F5",
-    // fontFamily: "Poppins",
+  },
+  formButton: {
   },
 });

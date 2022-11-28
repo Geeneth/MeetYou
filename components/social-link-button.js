@@ -6,7 +6,8 @@ function SocialLinkButton(props) {
     <View style={styles.linkStyle}>
       <Button
         color="black"
-        title={props.platform}
+        //removing the MeetYouLink from the title
+        title={props.platform.slice(11, props.platform.length)}
         onPress={() => Linking.openURL(props.redirect)}
       />
     </View>
