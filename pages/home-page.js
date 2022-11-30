@@ -1,4 +1,13 @@
-import { StyleSheet, Text, View, Button, TextInput } from "react-native";
+import {
+  StyleSheet,
+  Text,
+  View,
+  Button,
+  TextInput,
+  Pressable,
+  Image,
+  TouchableOpacity,
+} from "react-native";
 import SocialLinkButton from "../components/social-link-button";
 import { NavigationContainer } from "@react-navigation/native";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
@@ -6,11 +15,32 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import UserInfoPage from "./user-info-page";
 import ReceivePage from "./receive-page";
 import Navigation from "./navigation";
+import QRCode from "react-native-qrcode-svg";
 
 function HomePage(props) {
+
+  const generateQRCode = () => {
+    return (
+      <QRCode
+        value="https://www.instagram.com/not_geeneth/"
+        size={200}
+        color="black"
+        backgroundColor="white"
+      />
+    );
+  };
+
   return (
     <View style={styles.container}>
-    <Text> Hello World </Text>
+      <Text> Hello World </Text>
+      <View>
+        <TouchableOpacity onPress={() => console.log("Pressed")}>
+          <Image
+            style={styles.imageStyle}
+            source={require("../assets/icons/generate-qr.png")}
+          />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
@@ -23,8 +53,12 @@ const styles = StyleSheet.create({
     height: "100%",
     backgroundColor: "white",
   },
+  imageStyle: {
+    width: 100,
+    height: 100,
+    alignSelf: "center",
+  },
 });
-
 
 // const styles = StyleSheet.create({
 //   container: {

@@ -67,13 +67,24 @@ function UserInfoPage(props) {
   // };
 
   //create a function to delete the user's input from async storage
-  const removeValue = async () => {
+  const removeValue = async (removePlatform) => {
+    try {
+      await AsyncStorage.removeItem(removePlatform);
+      // AsyncStorage.clear();
+    } catch (e) {
+      console.log(e);
+    }
+    importData();
+  };
+
+  const removeAll = async () => {
     try {
       // await AsyncStorage.removeItem("userInfo");
       AsyncStorage.clear();
     } catch (e) {
       console.log(e);
     }
+    importData();
   };
 
   return (
@@ -125,24 +136,22 @@ function UserInfoPage(props) {
       </View>
 
       {/* //map through the counter array and create a new social link button for each element */}
-      <View>
+      <View style={styles.scrollArea}>
         <ScrollView>
           {socialLinks.map((userInfo) => (
             <View key={userInfo[0]}>
-              <SocialLinkButton platform={userInfo[0]} redirect={userInfo[1]} />
+              <SocialLinkButton platform={userInfo[0]} redirect={userInfo[1]} deleteFunction={removeValue}/>
             </View>
           ))}
         </ScrollView>
       </View>
 
-      <View style={styles.bottomButtons}>
-        <View style={styles.saveButton}>
+      <View style={styles.deleteButton}>
           <Button
             color="black"
-            title="Save"
-            onPress={() => console.log("Saved")}
+            title="Delete All"
+            onPress={() => removeAll()}
           />
-        </View>
       </View>
     </View>
   );
@@ -226,5 +235,23 @@ const styles = StyleSheet.create({
     borderRadius: 10,
   },
   formButton: {
+
   },
+  scrollArea: {
+    height: "50%",
+    width: "100%",
+    marginTop: 30,
+  },
+  deleteButton: {
+    width: "45%",
+    borderWidth: 2,
+    borderRadius: 10,
+  },
+  bottomUserButton: {
+    marginTop: 20,
+    position: "absolute",
+    bottom: 50,
+    alignItems: "center",
+  },
+
 });
