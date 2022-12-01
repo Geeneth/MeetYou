@@ -7,6 +7,7 @@ import {
   Pressable,
   Image,
   TouchableOpacity,
+  Modal,
 } from "react-native";
 import SocialLinkButton from "../components/social-link-button";
 import { NavigationContainer } from "@react-navigation/native";
@@ -16,13 +17,40 @@ import UserInfoPage from "./user-info-page";
 import ReceivePage from "./receive-page";
 import Navigation from "./navigation";
 import QRCode from "react-native-qrcode-svg";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import React, { useState, useEffect } from "react";
+import { Linking } from "react-native";
 
 function HomePage(props) {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [qrString, setQrString] = useState('https://www.youtube.com/');
+  
 
-  const generateQRCode = () => {
+  //create a function to retrieve the user's input from async storage
+  const getData = async (userKey) => {
+    try {
+      const jsonValue = await AsyncStorage.getItem(userKey);
+      //set the value of the user's input to the state variable
+      console.log("QR String 1 : " + qrString);
+      setQrString(jsonValue);
+      console.log("QR String: " + qrString);
+      // return JSON.stringify(JSON.parse(jsonValue));
+      // return jsonValue != null ? JSON.stringify(JSON.parse(jsonValue)) : null;
+      
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  //a method to connect the social media links into one big string
+  const generateQRCodeString = () => {
+    getData("MeetYouLink");  
+  };
+
+  const generateQRCode = () => {    
     return (
       <QRCode
-        value="https://www.instagram.com/not_geeneth/"
+        value={qrString}
         size={200}
         color="black"
         backgroundColor="white"
@@ -30,16 +58,44 @@ function HomePage(props) {
     );
   };
 
+  getData("MeetYouLinkInstagram");
+  console.log("QR String 2: " + qrString);
+
   return (
     <View style={styles.container}>
       <Text> Hello World </Text>
       <View>
-        <TouchableOpacity onPress={() => console.log("Pressed")}>
+        <TouchableOpacity onPress={() => setModalVisible(true)}>
           <Image
             style={styles.imageStyle}
             source={require("../assets/icons/generate-qr.png")}
           />
         </TouchableOpacity>
+        
+
+        <View>
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={modalVisible}
+            onRequestClose={() => {
+              Alert.alert("Modal has been closed.");
+              setModalVisible(!modalVisible);
+            }}
+          >
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>        
+                {generateQRCode()}
+                <Pressable
+                  style={[styles.button, styles.buttonClose]}
+                  onPress={() => setModalVisible(!modalVisible)}
+                >
+                  <Text style={styles.textStyle}>Hide Modal</Text>
+                </Pressable>
+              </View>
+            </View>
+          </Modal>
+        </View>
       </View>
     </View>
   );
@@ -57,6 +113,27 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     alignSelf: "center",
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 22,
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
   },
 });
 
