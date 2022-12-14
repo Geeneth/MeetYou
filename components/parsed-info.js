@@ -10,6 +10,16 @@ const parseString = (string) => {
   return array;
 };
 
+const platformParser = (link) => {
+  let array = link.split("β");
+  return array[0];
+};
+
+const redirectParser = (link) => {
+  let array = link.split("β");
+  return array[1];
+};
+
 function ParsedInfo(props) {
   const [socialLinks, setSocialLinks] = useState([]);
 
@@ -30,9 +40,10 @@ function ParsedInfo(props) {
       <ScrollView>
         {/* map through the array and display the links */}
         {socialLinks.map((link) => {
+          {console.log("link: " + redirectParser(link))}
           return (
             <View key={link}>
-              <SocialLinkDisplay platform={link} redirect={link} />
+              <SocialLinkDisplay platform={platformParser(link)} redirect={redirectParser(link)} />
             </View>
           );
         })}

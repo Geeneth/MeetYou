@@ -37,8 +37,13 @@ const importData = async () => {
     // setSocialLinks(values);
 
     values.map((link) => {
-      rawString = rawString + link[1] + "Ω";
+      rawString = rawString + link[0] + "β" + link[1] + "Ω";
     });
+
+    //better way of parsing data
+    // filteredKeys.map(async (key) => {
+    //   let rawString = rawString + "β" + key.substring(11) + values[index] + "Ω";
+    // });
 
     return rawString;
   } catch (error) {
@@ -227,9 +232,10 @@ function HomePage(props) {
                   {scanned && (
                     <Button
                       title={"Scan again?"}
-                      onPress={() => {setScanned(false) 
-                        setText("Not yet scanned")}
-                      }
+                      onPress={() => {
+                        setScanned(false);
+                        setText("Not yet scanned");
+                      }}
                       color="tomato"
                     />
                   )}
@@ -306,7 +312,7 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     marginBottom: 2,
   },
-  textStyle: {    
+  textStyle: {
     color: "tomato",
     fontWeight: "bold",
     textAlign: "center",
