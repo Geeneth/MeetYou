@@ -27,6 +27,13 @@ function UserInfoPage(props) {
       const values = await AsyncStorage.multiGet(filteredKeys);
       //put the values into state variable socialLinks
       setSocialLinks(values);
+      
+      // map through the filteredKey and add the values to the AsyncStorage      
+      filteredKeys.map( async (key) => {
+        let combinedString = combinedString + values[index] + "Ω";
+        await AsyncStorage.setItem("combinedString", combinedString);
+      });
+
     } catch (error) {
       console.error(error);
     }

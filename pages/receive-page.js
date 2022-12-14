@@ -1,107 +1,113 @@
-import { StyleSheet, Text, View, Button, TextInput } from "react-native";
-import SocialLinkButton from "../components/social-link-button";
+import React, { useState, useEffect } from "react";
+import { Text, View, StyleSheet, Button } from "react-native";
+import { BarCodeScanner } from "expo-barcode-scanner";
 
-function ReceivePage(props) {
+function ReceivePage() {
+  const [hasPermission, setHasPermission] = useState(null);
+  const [scanned, setScanned] = useState(false);
+  const [text, setText] = useState("Not yet scanned");
+
+  //async function to get the value of a key called "combinedString"
+  const getData = async () => {
+    try {
+      const value = await AsyncStorage.getItem("combinedString");
+      if (value !== null) {
+        // value previously stored
+        console.log("value: " + value);
+      }
+    } catch (e) {
+      // error reading value
+      console.log("error reading value");
+    }
+  };
+
+  const askForCameraPermission = () => {
+    (async () => {
+      const { status } = await BarCodeScanner.requestPermissionsAsync();
+      setHasPermission(status === "granted");
+    })();
+  };
+
+  // Request Camera Permission
+  useEffect(() => {
+    askForCameraPermission();
+  }, []);
+
+  // What happens when we scan the bar code
+  const handleBarCodeScanned = ({ type, data }) => {
+    setScanned(true);
+    setText(data);
+    console.log("Type: " + type + "\nData: " + data);
+  };
+
+  // Check permissions and return the screens
+  if (hasPermission === null) {
+    return (
+      <View style={styles.container}>
+        <Text>Requesting for camera permission</Text>
+      </View>
+    );
+  }
+  if (hasPermission === false) {
+    return (
+      <View style={styles.container}>
+        <Text style={{ margin: 10 }}>No access to camera</Text>
+        <Button
+          title={"Allow Camera"}
+          onPress={() => askForCameraPermission()}
+        />
+      </View>
+    );
+  }
+
+  // Return the View
   return (
     <View style={styles.container}>
-      <View>
-        <Text style={styles.title}>Geeneth Kulatunge</Text>
-      </View>
-      <View style={styles.linksContainer}>
-        <SocialLinkButton
-          platform="Facebook"
-          link="https://www.facebook.com/"
+      <View style={styles.barcodebox}>
+        <BarCodeScanner
+          onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+          style={{ height: 400, width: 400 }}
         />
-        <SocialLinkButton
-          platform="Instagram"
-          link="https://www.instagram.com/"
+      </View>
+      <Text style={styles.maintext}>{text}</Text>
+
+      {scanned && (
+        <Button
+          title={"Scan again?"}
+          onPress={() => setScanned(false)}
+          color="tomato"
         />
-        <SocialLinkButton platform="Twitter" link="https://www.twitter.com/" />
-      </View>
-      <View style={styles.bottomButtons}>
-        <View style={styles.saveButton}>
-          <Button
-            color="black"
-            title="Save"
-            onPress={() => console.log("Saved")}
-          />
-        </View>
-        <View style={styles.doneButton}>
-          <Button
-            color="black"
-            title="Done"
-            onPress={() => console.log("Done")}
-          />
-        </View>
-      </View>
+      )}
+      <Button
+        style={styles.formButton}
+        title="Submit"
+        color="maroon"
+        onPress={getData}
+      />
     </View>
   );
 }
 
-export default ReceivePage;
-
 const styles = StyleSheet.create({
-    container: {
-      padding: 50,
-      height: "100%",
-    },
-    linksContainer: {
-      flexDirection: "column",
-      justifyContent: "space-between",
-    },
-    textInput: {
-      borderWidth: 1,
-      borderColor: "black",
-      padding: 10,
-      width: "80%",
-      marginRight: 10,
-    },
-    title: {
-      fontSize: 30,
-    //   fontFamily: "Poppins",
-      fontWeight: "bold",
-      padding: 10,
-      marginBottom: 20,
-      textAlign: "center",
-    },
-    edit: {
-      //put this at the bottom of the page
-      position: "absolute",
-      bottom: 100,
-      alignSelf: "center",
-  
-      flexDirection: "column",
-      justifyContent: "space-between",
-      height: 50,
-      width: "80%",
-      borderWidth: 2,
-      borderRadius: 10,
-      paddingTop: 4,
-      backgroundColor: "yellow",
-    //   fontFamily: "Poppins",
-    },
-  
-    bottomButtons: {
-      flexDirection: "row",
-      justifyContent: "space-between",
-      marginTop: 20,
-      position: "absolute",
-      bottom: 50,
-      alignSelf: "center",
-    },
-  
-    saveButton: {
-      width: "45%",
-      borderWidth: 2,
-      borderRadius: 10,
-      backgroundColor: "#33C4FF",
-    //   fontFamily: "Poppins",
-    },
-    doneButton: {
-      width: "45%",
-      borderWidth: 2,
-      borderRadius: 10,
-      backgroundColor: "lime",
-    //   fontFamily: "Poppins",
-    },
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  maintext: {
+    fontSize: 16,
+    margin: 20,
+  },
+  barcodebox: {
+    alignItems: "center",
+    justifyContent: "center",
+    height: 300,
+    width: 300,
+    overflow: "hidden",
+    borderRadius: 30,
+    backgroundColor: "tomato",
+  },
 });
+
+export default ReceivePage;

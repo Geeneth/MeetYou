@@ -20,23 +20,83 @@ import QRCode from "react-native-qrcode-svg";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useState, useEffect } from "react";
 import { Linking } from "react-native";
+import { BarCodeScanner } from "expo-barcode-scanner";
+import socialLinks from "../components/social-link-button";
+import ParsedInfo from "../components/parsed-info";
+
+const importData = async () => {
+  try {
+    const keys = await AsyncStorage.getAllKeys();
+    let rawString = "";
+    //put all the keys with "MeetYouLink" into an array
+    const filteredKeys = keys.filter((key) => key.includes("MeetYouLink"));
+    console.log("filtered keys: " + filteredKeys);
+    //get the values of the keys
+    const values = await AsyncStorage.multiGet(filteredKeys);
+    //put the values into state variable socialLinks
+    // setSocialLinks(values);
+
+    values.map((link) => {
+      rawString = rawString + link[1] + "Ω";
+    });
+
+    return rawString;
+  } catch (error) {
+    console.error(error);
+  }
+};
 
 function HomePage(props) {
   const [modalVisible, setModalVisible] = useState(false);
-  const [qrString, setQrString] = useState('https://www.youtube.com/');
-  
+  const [receiveModalVisible, setReceiveModalVisible] = useState(false);
+  const [qrString, setQrString] = useState("https://www.youtube.com/");
+
+  const [hasPermission, setHasPermission] = useState(true);
+  const [scanned, setScanned] = useState(false);
+  const [text, setText] = useState("Not yet scanned");
+
+  const [socialLinks, setSocialLinks] = useState([]);
+
+  useEffect(() => {
+    importData().then(setQrString);
+  }, []);
+
+  //funciton to run importData() and set the state variable
+  const importDataHelper = () => {
+    importData().then(setSocialLinks);
+    console.log("Social Links: " + socialLinks);
+  };
+
+  const getData2 = async () => {
+    try {
+      importDataHelper();
+      socialLinks.map((link) => {
+        setQrString(qrString + link[1]);
+      });
+    } catch (e) {
+      console.log(e);
+    }
+  };
 
   //create a function to retrieve the user's input from async storage
   const getData = async (userKey) => {
     try {
-      const jsonValue = await AsyncStorage.getItem(userKey);
+      //map through socialLinks array
+      socialLinks.map((link) => {
+        //if the key of the link includes the user's input
+        if (link[0].includes(userKey)) {
+          //set the value of the user's input to the state variable
+          setQrString(qrString + link[1]);
+        }
+      });
+
+      // const jsonValue = await AsyncStorage.getItem.includes(userKey);
       //set the value of the user's input to the state variable
       console.log("QR String 1 : " + qrString);
       setQrString(jsonValue);
       console.log("QR String: " + qrString);
       // return JSON.stringify(JSON.parse(jsonValue));
       // return jsonValue != null ? JSON.stringify(JSON.parse(jsonValue)) : null;
-      
     } catch (e) {
       console.log(e);
     }
@@ -44,14 +104,16 @@ function HomePage(props) {
 
   //a method to connect the social media links into one big string
   const generateQRCodeString = () => {
-    getData("MeetYouLink");  
+    getData("MeetYouLink");
   };
 
-  const generateQRCode = () => {    
+  const generateQRCode = () => {
+    importDataHelper();
+    console.log("QR String 3: " + qrString);
     return (
       <QRCode
         value={qrString}
-        size={200}
+        size={300}
         color="black"
         backgroundColor="white"
       />
@@ -61,9 +123,45 @@ function HomePage(props) {
   getData("MeetYouLinkInstagram");
   console.log("QR String 2: " + qrString);
 
+  const handleBarCodeScanned = ({ type, data }) => {
+    setScanned(true);
+    setText(data);
+    console.log("Type: " + type + "\nData: " + data);
+  };
+
+  // Check permissions and return the screens
+  if (hasPermission === null) {
+    return (
+      <View style={styles.container}>
+        <Text>Requesting for camera permission</Text>
+      </View>
+    );
+  }
+  if (hasPermission === false) {
+    return (
+      <View style={styles.container}>
+        <Text style={{ margin: 10 }}>No access to camera</Text>
+        <Button
+          title={"Allow Camera"}
+          onPress={() => askForCameraPermission()}
+        />
+      </View>
+    );
+  }
+
+  const inputValid = (input) => {
+    if (input.includes("Not yet scanned")) {
+      return <Text>Invalid QR Code</Text>;
+    } else {
+      return <ParsedInfo text={text}></ParsedInfo>;
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text> Hello World </Text>
+      {/* //button that runs getData */}
+      <Button title="Get Data" onPress={() => importDataHelper()} />
       <View>
         <TouchableOpacity onPress={() => setModalVisible(true)}>
           <Image
@@ -71,7 +169,12 @@ function HomePage(props) {
             source={require("../assets/icons/generate-qr.png")}
           />
         </TouchableOpacity>
-        
+        <TouchableOpacity onPress={() => setReceiveModalVisible(true)}>
+          <Image
+            style={styles.imageStyle}
+            source={require("../assets/icons/generate-qr.png")}
+          />
+        </TouchableOpacity>
 
         <View>
           <Modal
@@ -84,11 +187,57 @@ function HomePage(props) {
             }}
           >
             <View style={styles.centeredView}>
-              <View style={styles.modalView}>        
-                {generateQRCode()}
+              <View style={styles.modalView}>
+                <View style={styles.generateQRCode}>{generateQRCode()}</View>
                 <Pressable
                   style={[styles.button, styles.buttonClose]}
                   onPress={() => setModalVisible(!modalVisible)}
+                >
+                  <Text style={styles.textStyle}>Hide Modal</Text>
+                </Pressable>
+              </View>
+            </View>
+          </Modal>
+        </View>
+
+        <View>
+          <Modal
+            animationType="slide"
+            transparent={true}
+            visible={receiveModalVisible}
+            onRequestClose={() => {
+              Alert.alert("Modal has been closed.");
+              setReceiveModalVisible(!receiveModalVisible);
+            }}
+          >
+            <View style={styles.centeredView}>
+              <View style={styles.modalView}>
+                <View style={styles.scannerContainer}>
+                  <View style={styles.barcodebox}>
+                    <BarCodeScanner
+                      onBarCodeScanned={
+                        scanned ? undefined : handleBarCodeScanned
+                      }
+                      style={{ height: 400, width: 400 }}
+                    />
+                  </View>
+                  {/* <Text style={styles.maintext}>{text}</Text> */}
+
+                  {/* <ParsedInfo text={text}></ParsedInfo> */}
+                  {scanned && (
+                    <Button
+                      title={"Scan again?"}
+                      onPress={() => {setScanned(false) 
+                        setText("Not yet scanned")}
+                      }
+                      color="tomato"
+                    />
+                  )}
+                  {inputValid(text)}
+                </View>
+                <Pressable
+                  style={[styles.button, styles.buttonClose]}
+                  onPress={() => setReceiveModalVisible(!receiveModalVisible)}
                 >
                   <Text style={styles.textStyle}>Hide Modal</Text>
                 </Pressable>
@@ -118,7 +267,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    marginTop: 22,
   },
   modalView: {
     margin: 20,
@@ -134,6 +282,36 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+  },
+  generateQRCode: {
+    alignItems: "center",
+    justifyContent: "center",
+    height: 350,
+    width: 350,
+    overflow: "hidden",
+    borderRadius: 30,
+    marginBottom: 20,
+  },
+  scannerContainer: {
+    padding: 10,
+    height: "75%",
+    backgroundColor: "white",
+  },
+  barcodebox: {
+    alignItems: "center",
+    justifyContent: "center",
+    height: 300,
+    width: 300,
+    overflow: "hidden",
+    borderRadius: 30,
+    marginBottom: 2,
+  },
+  textStyle: {    
+    color: "tomato",
+    fontWeight: "bold",
+    textAlign: "center",
+    fontSize: 20,
+    top: 140,
   },
 });
 
