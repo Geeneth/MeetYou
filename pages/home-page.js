@@ -23,35 +23,39 @@ import { Linking } from "react-native";
 import { BarCodeScanner } from "expo-barcode-scanner";
 import socialLinks from "../components/social-link-button";
 import ParsedInfo from "../components/parsed-info";
+import QRCodeGeneration from "../components/QRCodeGeneration";
 
-const importData = async () => {
-  try {
-    const keys = await AsyncStorage.getAllKeys();
-    let rawString = "";
-    //put all the keys with "MeetYouLink" into an array
-    const filteredKeys = keys.filter((key) => key.includes("MeetYouLink"));
-    console.log("filtered keys: " + filteredKeys);
-    //get the values of the keys
-    const values = await AsyncStorage.multiGet(filteredKeys);
-    //put the values into state variable socialLinks
-    // setSocialLinks(values);
 
-    values.map((link) => {
-      rawString = rawString + link[0] + "β" + link[1] + "Ω";
-    });
-
-    //better way of parsing data
-    // filteredKeys.map(async (key) => {
-    //   let rawString = rawString + "β" + key.substring(11) + values[index] + "Ω";
-    // });
-
-    return rawString;
-  } catch (error) {
-    console.error(error);
-  }
-};
 
 function HomePage(props) {
+
+  const importData = async () => {
+    try {
+      const keys = await AsyncStorage.getAllKeys();
+      let rawString = "";
+      //put all the keys with "MeetYouLink" into an array
+      const filteredKeys = keys.filter((key) => key.includes("MeetYouLink"));
+      console.log("filtered keys: " + filteredKeys);
+      //get the values of the keys
+      const values = await AsyncStorage.multiGet(filteredKeys);
+      //put the values into state variable socialLinks
+      // setSocialLinks(values);
+  
+      values.map((link) => {
+        rawString = rawString + link[0] + "β" + link[1] + "Ω";
+      });
+  
+      //better way of parsing data
+      // filteredKeys.map(async (key) => {
+      //   let rawString = rawString + "β" + key.substring(11) + values[index] + "Ω";
+      // });
+  
+      return rawString;
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   const [modalVisible, setModalVisible] = useState(false);
   const [receiveModalVisible, setReceiveModalVisible] = useState(false);
   const [qrString, setQrString] = useState("https://www.youtube.com/");
@@ -60,7 +64,7 @@ function HomePage(props) {
   const [scanned, setScanned] = useState(false);
   const [text, setText] = useState("Not yet scanned");
 
-  const [socialLinks, setSocialLinks] = useState([]);
+  const [socialLinks, setSocialLinks] = useState("");
 
   useEffect(() => {
     importData().then(setQrString);
@@ -68,7 +72,7 @@ function HomePage(props) {
 
   //funciton to run importData() and set the state variable
   const importDataHelper = () => {
-    importData().then(setSocialLinks);
+    importData().then(setQrString);
     console.log("Social Links: " + socialLinks);
   };
 
@@ -114,14 +118,9 @@ function HomePage(props) {
 
   const generateQRCode = () => {
     importDataHelper();
-    console.log("QR String 3: " + qrString);
+    console.log("QR String 32222: " + qrString);
     return (
-      <QRCode
-        value={qrString}
-        size={300}
-        color="black"
-        backgroundColor="white"
-      />
+      <QRCodeGeneration qrString={qrString}/>
     );
   };
 
