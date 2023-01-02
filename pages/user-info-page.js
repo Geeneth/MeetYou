@@ -16,6 +16,7 @@ import { Linking } from "react-native";
 function UserInfoPage(props) {
   //state variable for an array of social links
   const [socialLinks, setSocialLinks] = React.useState([]);
+  const [userName, setUserName] = React.useState("Geeneth Kulatunge");
 
   const importData = async () => {
     try {
@@ -97,7 +98,7 @@ function UserInfoPage(props) {
   return (
     <View style={styles.container}>
       <View>
-        <Text style={styles.title}>Geeneth Kulatunge</Text>
+        <Text style={styles.title}>{userName}</Text>
       </View>
 
       {/* //map through the counter array and create a new social link button for each element */}
