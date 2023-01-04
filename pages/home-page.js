@@ -165,7 +165,7 @@ function HomePage(props) {
     <View style={styles.container}>
       <Text> Hello World </Text>
       {/* //button that runs getData */}
-      <Button title="Get Data" onPress={() => importDataHelper()} />
+      {/* <Button title="Get Data" onPress={() => importDataHelper()} /> */}
       <View>
         <TouchableOpacity onPress={() => setModalVisible(true)}>
           <Image

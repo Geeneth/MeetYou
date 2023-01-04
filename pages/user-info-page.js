@@ -16,7 +16,8 @@ import { Linking } from "react-native";
 function UserInfoPage(props) {
   //state variable for an array of social links
   const [socialLinks, setSocialLinks] = React.useState([]);
-  const [userName, setUserName] = React.useState("Geeneth Kulatunge");
+  const [userName, setUserName] = React.useState("New User");
+  const [text, onChangeText] = React.useState("New User");
 
   const importData = async () => {
     try {
@@ -34,6 +35,12 @@ function UserInfoPage(props) {
         let combinedString = combinedString + values[index] + "Ω";
         await AsyncStorage.setItem("combinedString", combinedString);
       });
+
+      //get the user's name
+      const userName = await AsyncStorage.getItem("userName");
+      setUserName(userName);
+      onChangeText(userName);
+      console.log("User Name: " + userName);
 
     } catch (error) {
       console.error(error);
@@ -75,6 +82,17 @@ function UserInfoPage(props) {
   // };
 
   //create a function to delete the user's input from async storage
+
+  const updateName = async (newName) => {
+    try {
+      await AsyncStorage.setItem("userName", newName);
+    } catch (e) {
+      console.log(e);
+    }
+    importData();
+    onChangeText(newName);
+  };
+
   const removeValue = async (removePlatform) => {
     try {
       await AsyncStorage.removeItem(removePlatform);
@@ -99,6 +117,14 @@ function UserInfoPage(props) {
     <View style={styles.container}>
       <View>
         <Text style={styles.title}>{userName}</Text>
+      </View>
+
+      <View>
+      <TextInput
+        style={styles.input}
+        onChangeText={(text) => updateName(text)}
+        value={text}
+      />
       </View>
 
       {/* //map through the counter array and create a new social link button for each element */}
