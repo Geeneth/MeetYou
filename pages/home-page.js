@@ -29,7 +29,7 @@ import { createStackNavigator } from 'react-navigation';
 import * as SQLite from 'expo-sqlite';
 
 
-const db = SQLite.openDatabase('contact1.db');
+const db = SQLite.openDatabase('contact88.db');
 
 function HomePage(props) {
 
@@ -75,12 +75,11 @@ function HomePage(props) {
   const [qrcode, setQrcode] = useState();
 
   const saveQrAsync = async (text) =>{
-    try {
-      await AsyncStorage.setItem(`value${counter}`, value);
-      counter += 1;
-  } catch (error) {
-      console.log(error);
-  }
+    try{
+      await AsyncStorage.setItem("QrCode",text);
+    }catch(e){
+      console.log(e);
+    }
   } 
   //create table in database contact.db
   useEffect(() => {

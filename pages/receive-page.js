@@ -19,7 +19,7 @@ export default function App() {
   AsyncStorage.getItem('QrCode')
   .then(text =>{
     qrcode1 = text;
-    console.log(qrcode1);
+    console.log("Async Test " + qrcode1);
   })
   .catch(error => console.log(error));
 
