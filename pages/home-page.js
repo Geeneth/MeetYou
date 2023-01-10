@@ -24,10 +24,16 @@ import { BarCodeScanner } from "expo-barcode-scanner";
 import socialLinks from "../components/social-link-button";
 import ParsedInfo from "../components/parsed-info";
 import QRCodeGeneration from "../components/QRCodeGeneration";
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { createStackNavigator } from 'react-navigation';
+import * as SQLite from 'expo-sqlite';
 
 
+const db = SQLite.openDatabase('contact1.db');
 
 function HomePage(props) {
+
+
 
   const importData = async () => {
     try {
@@ -55,7 +61,6 @@ function HomePage(props) {
       console.error(error);
     }
   };
-
   const [modalVisible, setModalVisible] = useState(false);
   const [receiveModalVisible, setReceiveModalVisible] = useState(false);
   const [qrString, setQrString] = useState("https://www.youtube.com/");
@@ -63,9 +68,43 @@ function HomePage(props) {
   const [hasPermission, setHasPermission] = useState(true);
   const [scanned, setScanned] = useState(false);
   const [text, setText] = useState("Not yet scanned");
-
+  const [id, setId] = useState('');
+  const [qrcode1, setQrcode1] = useState('');
+  const [qr, setQr] = useState([]);
   const [socialLinks, setSocialLinks] = useState("");
+  const [qrcode, setQrcode] = useState();
 
+  const saveQrAsync = async (text) =>{
+    try {
+      await AsyncStorage.setItem(`value${counter}`, value);
+      counter += 1;
+  } catch (error) {
+      console.log(error);
+  }
+  } 
+  //create table in database contact.db
+  useEffect(() => {
+    db.transaction(tx => {
+      tx.executeSql('create table if not exists qrcode (id integer primary key not null, qrcode1 TEXT);');
+    });
+    updateList();
+  }, []);
+  //save qr code
+  const saveQr = () => {
+    db.transaction(tx => {
+        tx.executeSql('insert into qrcode (qrcode1) values (?)', [qrcode1]);
+      }, null, updateList
+    )
+  }
+  console.log("testing database "+ qrcode1);
+  const updateList = () => {
+    db.transaction(tx => {
+      tx.executeSql('select * from qrcode;', [], (_, { rows }) =>
+        setQr(rows._array)
+      ); 
+    });
+  }
+  console.log("testing database "+ qr[1]);
   useEffect(() => {
     importData().then(setQrString);
   }, []);
@@ -125,7 +164,7 @@ function HomePage(props) {
   };
 
   getData("MeetYouLinkInstagram");
-  console.log("QR String 2: " + qrString);
+  console.log("QR String 2: " + JSON.stringify(qrString));
 
   const handleBarCodeScanned = ({ type, data }) => {
     setScanned(true);
@@ -240,6 +279,15 @@ function HomePage(props) {
                   )}
                   {inputValid(text)}
                 </View>
+                
+                <Button
+                  title="Save Contact"
+                  style={{height: 40, borderColor: 'gray', borderWidth: 1}}
+                  onPress={() => {
+                    setQrcode1(text); //save qr code value to database but it doesnt work
+                    saveQrAsync(text);  // Update the value of qr code in asyncstorage
+                  }}  
+                />    
                 <Pressable
                   style={[styles.button, styles.buttonClose]}
                   onPress={() => setReceiveModalVisible(!receiveModalVisible)}

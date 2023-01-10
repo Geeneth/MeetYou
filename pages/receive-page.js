@@ -1,113 +1,145 @@
-import React, { useState, useEffect } from "react";
-import { Text, View, StyleSheet, Button } from "react-native";
-import { BarCodeScanner } from "expo-barcode-scanner";
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TextInput, Button, Alert, ScrollView, FlatList } from 'react-native';
+import * as SQLite from 'expo-sqlite';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-function ReceivePage() {
-  const [hasPermission, setHasPermission] = useState(null);
-  const [scanned, setScanned] = useState(false);
-  const [text, setText] = useState("Not yet scanned");
+const db = SQLite.openDatabase('contact88.db');
 
-  //async function to get the value of a key called "combinedString"
-  const getData = async () => {
-    try {
-      const value = await AsyncStorage.getItem("combinedString");
-      if (value !== null) {
-        // value previously stored
-        console.log("value: " + value);
-      }
-    } catch (e) {
-      // error reading value
-      console.log("error reading value");
-    }
-  };
+export default function App() {
+  const [name, setName] = useState('');
+  const [id, setId] = useState('');
+  const [qrcode, setQrcode] = useState('');
+  const [qr, setQr] = useState([]);
+  const [contacts, setContacts] = useState([]);
+  //qrcode1 carries the AsyncStorage Value and has to be let 
+  //so that we dont get error saying its a read only
+  let qrcode1
 
-  const askForCameraPermission = () => {
-    (async () => {
-      const { status } = await BarCodeScanner.requestPermissionsAsync();
-      setHasPermission(status === "granted");
-    })();
-  };
+  //retrieving the scanned qr from Home page
+  AsyncStorage.getItem('QrCode')
+  .then(text =>{
+    qrcode1 = text;
+    console.log(qrcode1);
+  })
+  .catch(error => console.log(error));
 
-  // Request Camera Permission
+  //tried to do the useeffect here so that it runs automatically when
+  //'name' state is updated
   useEffect(() => {
-    askForCameraPermission();
+    setQrcode(qrcode1);
+  }, [name]);
+
+//create table in database contact.db
+  useEffect(() => {
+    db.transaction(tx => {
+      tx.executeSql('create table if not exists contacts (id integer primary key not null, name text, qrcode text);');
+    });
+    updateList();
   }, []);
 
-  // What happens when we scan the bar code
-  const handleBarCodeScanned = ({ type, data }) => {
-    setScanned(true);
-    setText(data);
-    console.log("Type: " + type + "\nData: " + data);
-  };
-
-  // Check permissions and return the screens
-  if (hasPermission === null) {
-    return (
-      <View style={styles.container}>
-        <Text>Requesting for camera permission</Text>
-      </View>
-    );
-  }
-  if (hasPermission === false) {
-    return (
-      <View style={styles.container}>
-        <Text style={{ margin: 10 }}>No access to camera</Text>
-        <Button
-          title={"Allow Camera"}
-          onPress={() => askForCameraPermission()}
-        />
-      </View>
-    );
+//save contact
+  const saveContact = () => {
+    db.transaction(tx => {
+        tx.executeSql('insert into contacts (name, qrcode) values (?, ?)', [name, qrcode]);
+      }, null, updateList
+    )
   }
 
-  // Return the View
+  const updateList = () => {
+    db.transaction(tx => {
+      tx.executeSql('select * from contacts;', [], (_, { rows }) =>
+        setContacts(rows._array)
+      ); 
+    });
+  }
+
+  //This doesnt work if you can fix it please do
+  //Supposed to get the text value for the scanned code from
+  //homepage but it doesnt seem to be updated over on this page
+  //it does get inserted into the table at home-page though
+  useEffect(() => {
+    db.transaction(tx => {
+      tx.executeSql("select * from qrcode", [], (_, { rows }) => {
+        setQr(rows._array);
+      });
+    });
+  }, []);
+  
+  console.log("testing database in contacts "+ JSON.stringify(qr));
+
+//delete contact instantly without apple alert
+  const deleteContact = (id) => {
+    db.transaction(
+      tx => {
+        tx.executeSql(`delete from contacts where id = ?;`, [id]);
+      }, null, updateList
+    )
+  }
+
+//delete contact with apple popup alert and asks the user again
+  const deleteAlert = (itemId) => {
+    Alert.alert(
+      "Are you sure you want to delete this contact?",
+      "My Alert Msg",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel"
+        },
+        { text: "Yes", onPress: () => deleteContact(itemId) }
+      ]
+    );
+  }
+
   return (
+    //user inputs Contact Name
+    //figure out how to get setQrcode(qrcode1) added after
+    //the name input as this is where we save everything into
+    //the database
     <View style={styles.container}>
-      <View style={styles.barcodebox}>
-        <BarCodeScanner
-          onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
-          style={{ height: 400, width: 400 }}
-        />
-      </View>
-      <Text style={styles.maintext}>{text}</Text>
-
-      {scanned && (
-        <Button
-          title={"Scan again?"}
-          onPress={() => setScanned(false)}
-          color="tomato"
-        />
-      )}
-      <Button
-        style={styles.formButton}
-        title="Submit"
-        color="maroon"
-        onPress={getData}
+      <TextInput
+        placeholder="Name"
+        style={styles.input}
+        value={name}
+        onChangeText={(name) => setName(name)}
       />
+      <Button title="Save" onPress={saveContact} />
+      <ScrollView>
+        {contacts.map((item) => (
+          <View key={item.id} style={styles.listcontainer}>
+            <Text>Name: {item.name}</Text>
+            <Text>QR: {item.qrcode}</Text>
+            <Button title="Delete" onPress={() => deleteContact(item.id)} />
+            <Button title="Delete3" onPress={() => deleteAlert(item.id)} />
+          </View>
+        ))}
+      </ScrollView>
     </View>
   );
 }
 
+//dogshit styling courtesy of me
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: '#fff',
+    paddingTop: 40,
+    paddingHorizontal: 20
   },
-  maintext: {
-    fontSize: 16,
-    margin: 20,
+  input: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    padding: 8,
+    margin: 10,
+    width: '95%'
   },
-  barcodebox: {
-    alignItems: "center",
-    justifyContent: "center",
-    height: 300,
-    width: 300,
-    overflow: "hidden",
-    borderRadius: 30,
-    backgroundColor: "tomato",
-  },
+  listcontainer: {
+    backgroundColor: '#fff',
+    padding: 10,
+    margin: 10,
+    borderWidth: 1,
+    borderColor: '#ddd'
+  }
 });
 
-export default ReceivePage;
