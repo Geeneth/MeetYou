@@ -20,13 +20,14 @@ export default function App() {
   .then(text =>{
     qrcode1 = text;
     console.log("Async Test " + qrcode1);
+    setQrcode(qrcode1);
   })
   .catch(error => console.log(error));
 
   //tried to do the useeffect here so that it runs automatically when
   //'name' state is updated
   useEffect(() => {
-    setQrcode(qrcode1);
+    // setQrcode(qrcode1);
   }, [name]);
 
 //create table in database contact.db
@@ -105,6 +106,7 @@ export default function App() {
         onChangeText={(name) => setName(name)}
       />
       <Button title="Save" onPress={saveContact} />
+      <Button title="Testing Async" onPress={() => console.log("QrCode Test: "+qrcode1)} />
       <ScrollView>
         {contacts.map((item) => (
           <View key={item.id} style={styles.listcontainer}>
