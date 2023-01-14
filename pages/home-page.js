@@ -50,11 +50,11 @@ function HomePage(props) {
       values.map((link) => {
         rawString = rawString + link[0] + "β" + link[1] + "Ω";
       });
-  
-      //better way of parsing data
-      // filteredKeys.map(async (key) => {
-      //   let rawString = rawString + "β" + key.substring(11) + values[index] + "Ω";
-      // });
+
+      const tempUserName = String(await AsyncStorage.getItem("MeetYouUserName"));
+      console.log("temp user name: " + tempUserName);
+      rawString =  tempUserName + "Ω" + rawString;
+      console.log("rawString finusha: " + rawString);
   
       return rawString;
     } catch (error) {
@@ -63,7 +63,7 @@ function HomePage(props) {
   };
   const [modalVisible, setModalVisible] = useState(false);
   const [receiveModalVisible, setReceiveModalVisible] = useState(false);
-  const [qrString, setQrString] = useState("https://www.youtube.com/");
+  const [qrString, setQrString] = useState("");
 
   const [hasPermission, setHasPermission] = useState(true);
   const [scanned, setScanned] = useState(false);
