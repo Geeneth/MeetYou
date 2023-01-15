@@ -89,6 +89,10 @@ export default function App() {
     );
   };
 
+  const getName = (code) => {    
+    return code.split("Ω")[0];
+  };
+
   return (
     //user inputs Contact Name
     //figure out how to get setQrcode(qrcode1) added after
@@ -111,11 +115,10 @@ export default function App() {
         {selectContacts()}
         {contacts.map((item) => (
           <View key={item.id} style={styles.listcontainer}>
-            <Text>id: {item.id}</Text>
-            <Text>QR: {item.qrcode}</Text>
             {/* <View>
               <ParsedInfo text={item.qrcode} />
             </View> */}
+            <Text>{getName(item.qrcode)}</Text>            
             <Button title="Open" onPress={() => openContact(item.qrcode)} />
             <Button title="Delete" onPress={() => deleteContact(item.id)} />
             <Button title="Delete3" onPress={() => deleteAlert(item.id)} />

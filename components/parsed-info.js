@@ -42,9 +42,6 @@ function ParsedInfo(props) {
         <ScrollView>
           {/* map through the array and display the links */}
           {socialLinks.map((link) => {
-            {
-              console.log("link: " + redirectParser(link));
-            }
             if (link == socialLinks[0]) {
             } else {
               return (
