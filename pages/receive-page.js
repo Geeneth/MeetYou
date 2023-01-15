@@ -14,8 +14,9 @@ import {
 import * as SQLite from "expo-sqlite";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ParsedInfo from "../components/parsed-info";
+import Navigation from "./navigation";
 
-const db = SQLite.openDatabase("contact88.db");
+const db = SQLite.openDatabase("contact90.db");
 
 export default function App() {
   const [name, setName] = useState("");
@@ -34,74 +35,13 @@ export default function App() {
     setCurrentContact(item);
   };
 
-  const deleteValue = async () => {
-    try {
-      await AsyncStorage.removeItem("QrCode");
-    } catch (e) {
-      console.log(e);
-    }
-  };
-
-  //retrieving the scanned qr from Home page
-  AsyncStorage.getItem("QrCode")
-    .then((text) => {
-      qrcode1 = text;
-      console.log("Async Test " + qrcode1);
-      setQrcode(qrcode1);
-    })
-    .catch((error) => console.log(error));
-
-  //tried to do the useeffect here so that it runs automatically when
-  //'name' state is updated
-  useEffect(() => {
-    // setQrcode(qrcode1);
-  }, [name]);
-
-  //create table in database contact.db
-  useEffect(() => {
-    db.transaction((tx) => {
-      tx.executeSql(
-        "create table if not exists contacts (id integer primary key not null, name text, qrcode text);"
-      );
-    });
-    updateList();
-  }, []);
-
-  //save contact
-  const saveContact = () => {
-    db.transaction(
-      (tx) => {
-        tx.executeSql("insert into contacts (name, qrcode) values (?, ?)", [
-          name,
-          qrcode,
-        ]);
-      },
-      null,
-      updateList
-    );
-  };
-
   const updateList = () => {
-    db.transaction((tx) => {
-      tx.executeSql("select * from contacts;", [], (_, { rows }) =>
+    db.transaction(tx => {
+      tx.executeSql('select * from contacts;', [], (_, { rows }) =>
         setContacts(rows._array)
       );
     });
-  };
-
-  //This doesnt work if you can fix it please do
-  //Supposed to get the text value for the scanned code from
-  //homepage but it doesnt seem to be updated over on this page
-  //it does get inserted into the table at home-page though
-  useEffect(() => {
-    db.transaction((tx) => {
-      tx.executeSql("select * from qrcode", [], (_, { rows }) => {
-        setQr(rows._array);
-      });
-    });
-  }, []);
-
-  console.log("testing database in contacts " + JSON.stringify(qr));
+  }
 
   //delete contact instantly without apple alert
   const deleteContact = (id) => {
@@ -112,6 +52,15 @@ export default function App() {
       null,
       updateList
     );
+  };
+
+  const selectContacts = () => {
+    db.transaction((tx) => {
+      tx.executeSql("select * from contacts", [], (_, { rows }) =>
+        setContacts(rows._array)
+      );
+    });
+
   };
 
   //delete contact with apple popup alert and asks the user again
@@ -130,6 +79,16 @@ export default function App() {
     );
   };
 
+  const deleteAll = () => {
+    db.transaction(
+      (tx) => {
+        tx.executeSql("delete from contacts");
+      },
+      null,
+      updateList
+    );
+  };
+
   return (
     //user inputs Contact Name
     //figure out how to get setQrcode(qrcode1) added after
@@ -142,15 +101,17 @@ export default function App() {
         value={name}
         onChangeText={(name) => setName(name)}
       />
-      <Button title="Save" onPress={saveContact} />
+      {/* <Button title="Save" onPress={saveContact} /> */}
+      {/* <Button title="DeleteAll" onPress={deleteAll} /> */}
       <Button
         title="Testing Async"
         onPress={() => console.log("QrCode Test: " + qrcode1)}
       />
       <ScrollView>
+        {selectContacts()}
         {contacts.map((item) => (
           <View key={item.id} style={styles.listcontainer}>
-            <Text>Name: {item.name}</Text>
+            <Text>id: {item.id}</Text>
             <Text>QR: {item.qrcode}</Text>
             {/* <View>
               <ParsedInfo text={item.qrcode} />

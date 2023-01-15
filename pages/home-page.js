@@ -29,7 +29,7 @@ import { createStackNavigator } from 'react-navigation';
 import * as SQLite from 'expo-sqlite';
 
 
-const db = SQLite.openDatabase('contact88.db');
+const db = SQLite.openDatabase('contact90.db');
 
 function HomePage(props) {
 
@@ -67,38 +67,33 @@ function HomePage(props) {
 
   const [hasPermission, setHasPermission] = useState(true);
   const [scanned, setScanned] = useState(false);
-  const [text, setText] = useState("Not yet scanned");
+  const [text, setText] = useState("");
   const [id, setId] = useState('');
   const [qrcode1, setQrcode1] = useState('');
   const [qr, setQr] = useState([]);
   const [socialLinks, setSocialLinks] = useState("");
   const [qrcode, setQrcode] = useState();
 
-  const saveQrAsync = async (text) =>{
-    try{
-      await AsyncStorage.setItem("QrCode",text);
-    }catch(e){
-      console.log(e);
-    }
-  } 
-  //create table in database contact.db
+ 
   useEffect(() => {
     db.transaction(tx => {
-      tx.executeSql('create table if not exists qrcode (id integer primary key not null, qrcode1 TEXT);');
+      tx.executeSql("create table if not exists contacts (id integer primary key not null, qrcode text);");
     });
     updateList();
   }, []);
   //save qr code
   const saveQr = () => {
+    console.log("testing database "+ text);
     db.transaction(tx => {
-        tx.executeSql('insert into qrcode (qrcode1) values (?)', [qrcode1]);
+        tx.executeSql('insert into contacts (qrcode) values (?)', [text]);
       }, null, updateList
     )
   }
+  
   console.log("testing database "+ qrcode1);
   const updateList = () => {
     db.transaction(tx => {
-      tx.executeSql('select * from qrcode;', [], (_, { rows }) =>
+      tx.executeSql('select * from contacts;', [], (_, { rows }) =>
         setQr(rows._array)
       ); 
     });
@@ -149,11 +144,6 @@ function HomePage(props) {
     }
   };
 
-  //a method to connect the social media links into one big string
-  const generateQRCodeString = () => {
-    getData("MeetYouLink");
-  };
-
   const generateQRCode = () => {
     importDataHelper();
     console.log("QR String 32222: " + qrString);
@@ -161,9 +151,6 @@ function HomePage(props) {
       <QRCodeGeneration qrString={qrString}/>
     );
   };
-
-  getData("MeetYouLinkInstagram");
-  console.log("QR String 2: " + JSON.stringify(qrString));
 
   const handleBarCodeScanned = ({ type, data }) => {
     setScanned(true);
@@ -198,6 +185,7 @@ function HomePage(props) {
       return <ParsedInfo text={text}></ParsedInfo>;
     }
   };
+
 
   return (
     <View style={styles.container}>
@@ -283,8 +271,8 @@ function HomePage(props) {
                   title="Save Contact"
                   style={{height: 40, borderColor: 'gray', borderWidth: 1}}
                   onPress={() => {
-                    setQrcode1(text); //save qr code value to database but it doesnt work
-                    saveQrAsync(text);  // Update the value of qr code in asyncstorage
+                    console.log("Text TESTING OOGA BOOGA: " + text);
+                    saveQr();  // Update the value of qr code in asyncstorage
                   }}  
                 />    
                 <Pressable
