@@ -19,6 +19,23 @@ function UserInfoPage(props) {
   const [userName, setUserName] = React.useState("New User");
   const [text, onChangeText] = React.useState("New User");
 
+  const setDefaultName = async () => {
+    try {
+      //check if the user has a name stored in AsyncStorage
+      let userName = await AsyncStorage.getItem("MeetYouUserName");
+    } catch (e) {
+      console.log(e);
+    }
+    //if the user has a name stored in AsyncStorage, set the state variable userName to that name
+    if (userName == null || userName == "") {
+      try {
+        await AsyncStorage.setItem("MeetYouUserName", "New User");
+      } catch (e) {
+        console.log(e);
+      }
+    }
+  };
+
   const importData = async () => {
     try {
       const keys = await AsyncStorage.getAllKeys();
@@ -29,19 +46,18 @@ function UserInfoPage(props) {
       const values = await AsyncStorage.multiGet(filteredKeys);
       //put the values into state variable socialLinks
       setSocialLinks(values);
-      
-      // map through the filteredKey and add the values to the AsyncStorage      
-      filteredKeys.map( async (key) => {
+
+      // map through the filteredKey and add the values to the AsyncStorage
+      filteredKeys.map(async (key) => {
         let combinedString = combinedString + values[index] + "Ω";
         await AsyncStorage.setItem("combinedString", combinedString);
       });
 
       //get the user's name
-      const userName = await AsyncStorage.getItem("userName");
+      let userName = await AsyncStorage.getItem("MeetYouUserName");
       setUserName(userName);
       onChangeText(userName);
       console.log("User Name: " + userName);
-
     } catch (error) {
       console.error(error);
     }
@@ -49,6 +65,7 @@ function UserInfoPage(props) {
 
   useEffect(() => {
     importData();
+    setDefaultName();
   }, []);
 
   //create a function to store the user's input in async storage
@@ -85,7 +102,7 @@ function UserInfoPage(props) {
 
   const updateName = async (newName) => {
     try {
-      await AsyncStorage.setItem("userName", newName);
+      await AsyncStorage.setItem("MeetYouUserName", newName);
     } catch (e) {
       console.log(e);
     }
@@ -120,11 +137,12 @@ function UserInfoPage(props) {
       </View>
 
       <View>
-      <TextInput
-        style={styles.input}
-        onChangeText={(text) => updateName(text)}
-        value={text}
-      />
+        <TextInput
+          style={styles.input}
+          onChangeText={(text) => updateName(text)}
+          value={text}
+          placeholder="Enter your name"
+        />
       </View>
 
       {/* //map through the counter array and create a new social link button for each element */}
@@ -174,18 +192,18 @@ function UserInfoPage(props) {
         <ScrollView>
           {socialLinks.map((userInfo) => (
             <View key={userInfo[0]}>
-              <SocialLinkButton platform={userInfo[0]} redirect={userInfo[1]} deleteFunction={removeValue}/>
+              <SocialLinkButton
+                platform={userInfo[0]}
+                redirect={userInfo[1]}
+                deleteFunction={removeValue}
+              />
             </View>
           ))}
         </ScrollView>
       </View>
 
       <View style={styles.deleteButton}>
-          <Button
-            color="black"
-            title="Delete All"
-            onPress={() => removeAll()}
-          />
+        <Button color="black" title="Delete All" onPress={() => removeAll()} />
       </View>
     </View>
   );
@@ -268,9 +286,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderRadius: 10,
   },
-  formButton: {
-
-  },
+  formButton: {},
   scrollArea: {
     height: "50%",
     width: "100%",
@@ -287,5 +303,4 @@ const styles = StyleSheet.create({
     bottom: 50,
     alignItems: "center",
   },
-
 });

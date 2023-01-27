@@ -27,9 +27,13 @@ import QRCodeGeneration from "../components/QRCodeGeneration";
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { createStackNavigator } from 'react-navigation';
 import * as SQLite from 'expo-sqlite';
+import { SweepGradient } from "@shopify/react-native-skia";
+import { useMemo } from "react";
+import { useWindowDimensions } from "react-native";
+import { CoonsPatchMeshGradient } from "../components/gradient/aurora/components/CoonsPatchMeshGradient";
 
 
-const db = SQLite.openDatabase('contact88.db');
+const db = SQLite.openDatabase('contact90.db');
 
 function HomePage(props) {
 
@@ -50,11 +54,11 @@ function HomePage(props) {
       values.map((link) => {
         rawString = rawString + link[0] + "β" + link[1] + "Ω";
       });
-  
-      //better way of parsing data
-      // filteredKeys.map(async (key) => {
-      //   let rawString = rawString + "β" + key.substring(11) + values[index] + "Ω";
-      // });
+
+      const tempUserName = String(await AsyncStorage.getItem("MeetYouUserName"));
+      console.log("temp user name: " + tempUserName);
+      rawString =  tempUserName + "Ω" + rawString;
+      console.log("rawString finusha: " + rawString);
   
       return rawString;
     } catch (error) {
@@ -63,42 +67,37 @@ function HomePage(props) {
   };
   const [modalVisible, setModalVisible] = useState(false);
   const [receiveModalVisible, setReceiveModalVisible] = useState(false);
-  const [qrString, setQrString] = useState("https://www.youtube.com/");
+  const [qrString, setQrString] = useState("");
 
   const [hasPermission, setHasPermission] = useState(true);
   const [scanned, setScanned] = useState(false);
-  const [text, setText] = useState("Not yet scanned");
+  const [text, setText] = useState("");
   const [id, setId] = useState('');
   const [qrcode1, setQrcode1] = useState('');
   const [qr, setQr] = useState([]);
   const [socialLinks, setSocialLinks] = useState("");
   const [qrcode, setQrcode] = useState();
 
-  const saveQrAsync = async (text) =>{
-    try{
-      await AsyncStorage.setItem("QrCode",text);
-    }catch(e){
-      console.log(e);
-    }
-  } 
-  //create table in database contact.db
+ 
   useEffect(() => {
     db.transaction(tx => {
-      tx.executeSql('create table if not exists qrcode (id integer primary key not null, qrcode1 TEXT);');
+      tx.executeSql("create table if not exists contacts (id integer primary key not null, qrcode text);");
     });
     updateList();
   }, []);
   //save qr code
   const saveQr = () => {
+    console.log("testing database "+ text);
     db.transaction(tx => {
-        tx.executeSql('insert into qrcode (qrcode1) values (?)', [qrcode1]);
+        tx.executeSql('insert into contacts (qrcode) values (?)', [text]);
       }, null, updateList
     )
   }
+  
   console.log("testing database "+ qrcode1);
   const updateList = () => {
     db.transaction(tx => {
-      tx.executeSql('select * from qrcode;', [], (_, { rows }) =>
+      tx.executeSql('select * from contacts;', [], (_, { rows }) =>
         setQr(rows._array)
       ); 
     });
@@ -149,11 +148,6 @@ function HomePage(props) {
     }
   };
 
-  //a method to connect the social media links into one big string
-  const generateQRCodeString = () => {
-    getData("MeetYouLink");
-  };
-
   const generateQRCode = () => {
     importDataHelper();
     console.log("QR String 32222: " + qrString);
@@ -161,9 +155,6 @@ function HomePage(props) {
       <QRCodeGeneration qrString={qrString}/>
     );
   };
-
-  getData("MeetYouLinkInstagram");
-  console.log("QR String 2: " + JSON.stringify(qrString));
 
   const handleBarCodeScanned = ({ type, data }) => {
     setScanned(true);
@@ -198,6 +189,8 @@ function HomePage(props) {
       return <ParsedInfo text={text}></ParsedInfo>;
     }
   };
+
+  const palette = {otto: ["#FEF8C4","#E1F1D5","#C4EBE5","#ECA171","#FFFCF3","#D4B3B7","#B5A8D2","#F068A1","#EDD9A2","#FEEFAB","#A666C0","#8556E5","#DC4C4C","#EC795A","#E599F0","#96EDF2",],will: ["#2D4CD2","#36B6D9","#3CF2B5","#37FF5E","#59FB2D","#AFF12D","#DABC2D","#D35127","#D01252","#CF0CAA","#A80DD8","#5819D7",],skia: ["#61DAFB","#dafb61","#61fbcf","#61DAFB","#fb61da","#61fbcf","#dafb61","#fb61da","#61DAFB","#fb61da","#dafb61","#61fbcf","#fb61da","#61DAFB","#dafb61","#61fbcf",],};
 
   return (
     <View style={styles.container}>
@@ -283,8 +276,8 @@ function HomePage(props) {
                   title="Save Contact"
                   style={{height: 40, borderColor: 'gray', borderWidth: 1}}
                   onPress={() => {
-                    setQrcode1(text); //save qr code value to database but it doesnt work
-                    saveQrAsync(text);  // Update the value of qr code in asyncstorage
+                    console.log("Text TESTING OOGA BOOGA: " + text);
+                    saveQr();  // Update the value of qr code in asyncstorage
                   }}  
                 />    
                 <Pressable
@@ -298,6 +291,13 @@ function HomePage(props) {
           </Modal>
         </View>
       </View>
+      <View style={styles.gradient}>  
+        <CoonsPatchMeshGradient
+          rows={3}
+          cols={3}
+          colors={palette.skia}
+        />
+      </View>
     </View>
   );
 }
@@ -309,6 +309,10 @@ const styles = StyleSheet.create({
     padding: 50,
     height: "100%",
     backgroundColor: "white",
+  },
+  gradient: {
+    position: "absolute",
+    zIndex: -1,
   },
   imageStyle: {
     width: 100,

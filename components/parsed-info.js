@@ -36,18 +36,26 @@ function ParsedInfo(props) {
   }
 
   return (
-    <View style={styles.scrollArea}>
-      <ScrollView>
-        {/* map through the array and display the links */}
-        {socialLinks.map((link) => {
-          {console.log("link: " + redirectParser(link))}
-          return (
-            <View key={link}>
-              <SocialLinkDisplay platform={platformParser(link)} redirect={redirectParser(link)} />
-            </View>
-          );
-        })}
-      </ScrollView>
+    <View>
+      <Text style={styles.maintext}>{socialLinks[0]}</Text>
+      <View style={styles.scrollArea}>
+        <ScrollView>
+          {/* map through the array and display the links */}
+          {socialLinks.map((link) => {
+            if (link == socialLinks[0]) {
+            } else {
+              return (
+                <View key={link}>
+                  <SocialLinkDisplay
+                    platform={platformParser(link)}
+                    redirect={redirectParser(link)}
+                  />
+                </View>
+              );
+            }
+          })}
+        </ScrollView>
+      </View>
     </View>
   );
 }

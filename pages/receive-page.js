@@ -1,83 +1,69 @@
-import React, { useState, useEffect } from 'react';
-import { StyleSheet, Text, View, TextInput, Button, Alert, ScrollView, FlatList } from 'react-native';
-import * as SQLite from 'expo-sqlite';
+import React, { useState, useEffect } from "react";
+import {
+  StyleSheet,
+  Text,
+  View,
+  TextInput,
+  Button,
+  Alert,
+  ScrollView,
+  FlatList,
+  Modal,
+  Pressable,
+} from "react-native";
+import * as SQLite from "expo-sqlite";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import ParsedInfo from "../components/parsed-info";
+import Navigation from "./navigation";
 
-const db = SQLite.openDatabase('contact88.db');
+const db = SQLite.openDatabase("contact90.db");
 
 export default function App() {
-  const [name, setName] = useState('');
-  const [id, setId] = useState('');
-  const [qrcode, setQrcode] = useState('');
+  const [name, setName] = useState("");
+  const [id, setId] = useState("");
+  const [qrcode, setQrcode] = useState("");
+  const [currentContact, setCurrentContact] = useState("");
   const [qr, setQr] = useState([]);
   const [contacts, setContacts] = useState([]);
-  //qrcode1 carries the AsyncStorage Value and has to be let 
+  const [modalVisible, setModalVisible] = useState(false);
+  //qrcode1 carries the AsyncStorage Value and has to be let
   //so that we dont get error saying its a read only
-  let qrcode1
+  let qrcode1;
 
-  //retrieving the scanned qr from Home page
-  AsyncStorage.getItem('QrCode')
-  .then(text =>{
-    qrcode1 = text;
-    console.log("Async Test " + qrcode1);
-    setQrcode(qrcode1);
-  })
-  .catch(error => console.log(error));
-
-  //tried to do the useeffect here so that it runs automatically when
-  //'name' state is updated
-  useEffect(() => {
-    // setQrcode(qrcode1);
-  }, [name]);
-
-//create table in database contact.db
-  useEffect(() => {
-    db.transaction(tx => {
-      tx.executeSql('create table if not exists contacts (id integer primary key not null, name text, qrcode text);');
-    });
-    updateList();
-  }, []);
-
-//save contact
-  const saveContact = () => {
-    db.transaction(tx => {
-        tx.executeSql('insert into contacts (name, qrcode) values (?, ?)', [name, qrcode]);
-      }, null, updateList
-    )
-  }
+  const openContact = (item) => {
+    setModalVisible(true);
+    setCurrentContact(item);
+  };
 
   const updateList = () => {
     db.transaction(tx => {
       tx.executeSql('select * from contacts;', [], (_, { rows }) =>
         setContacts(rows._array)
-      ); 
+      );
     });
   }
 
-  //This doesnt work if you can fix it please do
-  //Supposed to get the text value for the scanned code from
-  //homepage but it doesnt seem to be updated over on this page
-  //it does get inserted into the table at home-page though
-  useEffect(() => {
-    db.transaction(tx => {
-      tx.executeSql("select * from qrcode", [], (_, { rows }) => {
-        setQr(rows._array);
-      });
-    });
-  }, []);
-  
-  console.log("testing database in contacts "+ JSON.stringify(qr));
-
-//delete contact instantly without apple alert
+  //delete contact instantly without apple alert
   const deleteContact = (id) => {
     db.transaction(
-      tx => {
+      (tx) => {
         tx.executeSql(`delete from contacts where id = ?;`, [id]);
-      }, null, updateList
-    )
-  }
+      },
+      null,
+      updateList
+    );
+  };
 
-//delete contact with apple popup alert and asks the user again
+  const selectContacts = () => {
+    db.transaction((tx) => {
+      tx.executeSql("select * from contacts", [], (_, { rows }) =>
+        setContacts(rows._array)
+      );
+    });
+
+  };
+
+  //delete contact with apple popup alert and asks the user again
   const deleteAlert = (itemId) => {
     Alert.alert(
       "Are you sure you want to delete this contact?",
@@ -86,12 +72,26 @@ export default function App() {
         {
           text: "Cancel",
           onPress: () => console.log("Cancel Pressed"),
-          style: "cancel"
+          style: "cancel",
         },
-        { text: "Yes", onPress: () => deleteContact(itemId) }
+        { text: "Yes", onPress: () => deleteContact(itemId) },
       ]
     );
-  }
+  };
+
+  const deleteAll = () => {
+    db.transaction(
+      (tx) => {
+        tx.executeSql("delete from contacts");
+      },
+      null,
+      updateList
+    );
+  };
+
+  const getName = (code) => {    
+    return code.split("Ω")[0];
+  };
 
   return (
     //user inputs Contact Name
@@ -105,18 +105,52 @@ export default function App() {
         value={name}
         onChangeText={(name) => setName(name)}
       />
-      <Button title="Save" onPress={saveContact} />
-      <Button title="Testing Async" onPress={() => console.log("QrCode Test: "+qrcode1)} />
+      {/* <Button title="Save" onPress={saveContact} /> */}
+      {/* <Button title="DeleteAll" onPress={deleteAll} /> */}
+      <Button
+        title="Testing Async"
+        onPress={() => console.log("QrCode Test: " + qrcode1)}
+      />
       <ScrollView>
+        {selectContacts()}
         {contacts.map((item) => (
           <View key={item.id} style={styles.listcontainer}>
-            <Text>Name: {item.name}</Text>
-            <Text>QR: {item.qrcode}</Text>
+            {/* <View>
+              <ParsedInfo text={item.qrcode} />
+            </View> */}
+            <Text>{getName(item.qrcode)}</Text>            
+            <Button title="Open" onPress={() => openContact(item.qrcode)} />
             <Button title="Delete" onPress={() => deleteContact(item.id)} />
             <Button title="Delete3" onPress={() => deleteAlert(item.id)} />
           </View>
         ))}
       </ScrollView>
+
+      <View>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={modalVisible}
+          onRequestClose={() => {
+            Alert.alert("Modal has been closed.");
+            setModalVisible(!modalVisible);
+          }}
+        >
+          <View style={styles.centeredView}>
+            <View style={styles.modalView}>
+              <View>
+                <ParsedInfo text={currentContact} />
+              </View>
+              <Pressable
+                style={[styles.button, styles.buttonClose]}
+                onPress={() => setModalVisible(!modalVisible)}
+              >
+                <Text style={styles.textStyle}>Hide Modal</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Modal>
+      </View>
     </View>
   );
 }
@@ -125,23 +159,38 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     paddingTop: 40,
-    paddingHorizontal: 20
+    paddingHorizontal: 20,
   },
   input: {
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: "#ddd",
     padding: 8,
     margin: 10,
-    width: '95%'
+    width: "95%",
   },
   listcontainer: {
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     padding: 10,
     margin: 10,
     borderWidth: 1,
-    borderColor: '#ddd'
-  }
+    borderColor: "#ddd",
+  },
+  modalView: {
+    margin: 20,
+    marginTop: 100,
+    backgroundColor: "white",
+    borderRadius: 20,
+    padding: 35,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
 });
-
