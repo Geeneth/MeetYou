@@ -31,7 +31,9 @@ import { SweepGradient } from "@shopify/react-native-skia";
 import { useMemo } from "react";
 import { useWindowDimensions } from "react-native";
 import { CoonsPatchMeshGradient } from "../components/gradient/aurora/components/CoonsPatchMeshGradient";
+import { MMKV } from 'react-native-mmkv';
 
+export const storage = new MMKV()
 
 const db = SQLite.openDatabase('contact90.db');
 
@@ -41,13 +43,13 @@ function HomePage(props) {
 
   const importData = async () => {
     try {
-      const keys = await AsyncStorage.getAllKeys();
+      const keys = storage.getAllKeys();
       let rawString = "";
       //put all the keys with "MeetYouLink" into an array
-      const filteredKeys = keys.filter((key) => key.includes("MeetYouLink"));
+      const filteredKeys = keys.filter((key) => key.includes('MeetYouLink'));
       console.log("filtered keys: " + filteredKeys);
       //get the values of the keys
-      const values = await AsyncStorage.multiGet(filteredKeys);
+      const values = keys.map((key) => storage.getString(filteredKeys))      
       //put the values into state variable socialLinks
       // setSocialLinks(values);
   
@@ -55,7 +57,7 @@ function HomePage(props) {
         rawString = rawString + link[0] + "β" + link[1] + "Ω";
       });
 
-      const tempUserName = String(await AsyncStorage.getItem("MeetYouUserName"));
+      const tempUserName = String(storage.getString('MeetYouUserName'));
       console.log("temp user name: " + tempUserName);
       rawString =  tempUserName + "Ω" + rawString;
       console.log("rawString finusha: " + rawString);

@@ -12,6 +12,9 @@ import { Formik } from "formik";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useState, useEffect } from "react";
 import { Linking } from "react-native";
+import { MMKV } from 'react-native-mmkv'
+
+export const storage = new MMKV()
 
 function UserInfoPage(props) {
   //state variable for an array of social links
@@ -22,14 +25,14 @@ function UserInfoPage(props) {
   const setDefaultName = async () => {
     try {
       //check if the user has a name stored in AsyncStorage
-      let userName = await AsyncStorage.getItem("MeetYouUserName");
+      let userName = storage.getString('MeetYouUserName');
     } catch (e) {
       console.log(e);
     }
     //if the user has a name stored in AsyncStorage, set the state variable userName to that name
     if (userName == null || userName == "") {
       try {
-        await AsyncStorage.setItem("MeetYouUserName", "New User");
+        storage.set('MeetYouUserName', 'New User');
       } catch (e) {
         console.log(e);
       }
@@ -38,23 +41,23 @@ function UserInfoPage(props) {
 
   const importData = async () => {
     try {
-      const keys = await AsyncStorage.getAllKeys();
+      const keys = storage.getAllKeys();
       //put all the keys with "MeetYouLink" into an array
       const filteredKeys = keys.filter((key) => key.includes("MeetYouLink"));
       console.log("filtered keys: " + filteredKeys);
       //get the values of the keys
-      const values = await AsyncStorage.multiGet(filteredKeys);
+      const values = keys.map((key) => storage.getString(filteredKeys));
       //put the values into state variable socialLinks
       setSocialLinks(values);
 
       // map through the filteredKey and add the values to the AsyncStorage
       filteredKeys.map(async (key) => {
         let combinedString = combinedString + values[index] + "Ω";
-        await AsyncStorage.setItem("combinedString", combinedString);
+        storage.set('combinedString', combinedString);
       });
 
       //get the user's name
-      let userName = await AsyncStorage.getItem("MeetYouUserName");
+      let userName =  storage.getString('MeetYouUserName');
       setUserName(userName);
       onChangeText(userName);
       console.log("User Name: " + userName);
@@ -75,7 +78,7 @@ function UserInfoPage(props) {
       console.log("userKey: " + userKey);
       console.log("value: " + value);
       let key = "MeetYouLink" + userKey;
-      await AsyncStorage.setItem(key, value);
+      storage.set(key, value);
       // getData();
       setSocialLinks([...socialLinks, ["MeetYouLink" + userKey, value]]);
       //output the social links to the console
@@ -102,7 +105,7 @@ function UserInfoPage(props) {
 
   const updateName = async (newName) => {
     try {
-      await AsyncStorage.setItem("MeetYouUserName", newName);
+      storage.set('MeetYouUserName', newName);
     } catch (e) {
       console.log(e);
     }
@@ -112,7 +115,7 @@ function UserInfoPage(props) {
 
   const removeValue = async (removePlatform) => {
     try {
-      await AsyncStorage.removeItem(removePlatform);
+      storage.delete(removePlatform);
       // AsyncStorage.clear();
     } catch (e) {
       console.log(e);
@@ -123,7 +126,7 @@ function UserInfoPage(props) {
   const removeAll = async () => {
     try {
       // await AsyncStorage.removeItem("userInfo");
-      AsyncStorage.clear();
+      storage.clearAll();
     } catch (e) {
       console.log(e);
     }
