@@ -7,14 +7,17 @@ function SocialLinkButton(props) {
     console.log("Delete button pressed");
     props.deleteFunction(props.platform);
   };
-
+  let title = '';
+  if (props.platform) {
+    title = props.platform.slice(11, props.platform.length)
+  }
   return (
     <View style={styles.linkStyle}>
       <View style={styles.redirectButtonStyle}>
         <Button
           color="black"
           //removing the MeetYouLink from the title
-          title={props.platform.slice(11, props.platform.length)}
+          title={title}
           onPress={() => Linking.openURL(props.redirect)}
         />
       </View>

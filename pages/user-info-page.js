@@ -46,10 +46,15 @@ function UserInfoPage(props) {
       const filteredKeys = keys.filter((key) => key.includes("MeetYouLink"));
       console.log("filtered keys: " + filteredKeys);
       //get the values of the keys
-      const values = keys.map((key) => storage.getString(filteredKeys));
+      let values = [];
+      const mapper = filteredKeys.map((key) => {
+        const value = storage.getString(key);
+        values.push(value);
+      });     
       //put the values into state variable socialLinks
       setSocialLinks(values);
-
+      console.log("values stored link:"+values);
+      console.log("values stored link in social links:"+socialLinks);
       // map through the filteredKey and add the values to the AsyncStorage
       filteredKeys.map(async (key) => {
         let combinedString = combinedString + values[index] + "Ω";
@@ -89,6 +94,8 @@ function UserInfoPage(props) {
     importData();
     console.log("Social Links Array: " + socialLinks);
   };
+  console.log("values stored link sociallinks2:"+socialLinks);
+
 
   //create a function to retrieve the user's input from async storage
   // const getData = async (userKey) => {

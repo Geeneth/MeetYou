@@ -44,20 +44,26 @@ function HomePage(props) {
   const importData = async () => {
     try {
       const keys = storage.getAllKeys();
+      console.log("getallkeys"+keys);
       let rawString = "";
       //put all the keys with "MeetYouLink" into an array
       const filteredKeys = keys.filter((key) => key.includes('MeetYouLink'));
-      console.log("filtered keys: " + filteredKeys);
+      console.log("filtered keys home page: " + filteredKeys);
       //get the values of the keys
-      const values = keys.map((key) => storage.getString(filteredKeys))      
+      let values = [];
+      filteredKeys.map((key) => {
+        const value = storage.getString(key);
+        values.push(value);
+      });      
       //put the values into state variable socialLinks
       // setSocialLinks(values);
-  
+      console.log("chensklandlasdasdkasbdbn:"+values);
       values.map((link) => {
         rawString = rawString + link[0] + "β" + link[1] + "Ω";
       });
+      console.log("chensklandlasdasdkasbdbndasdasdasdasdad:"+rawString);
 
-      const tempUserName = String(storage.getString('MeetYouUserName'));
+      const tempUserName = storage.getString('MeetYouUserName');
       console.log("temp user name: " + tempUserName);
       rawString =  tempUserName + "Ω" + rawString;
       console.log("rawString finusha: " + rawString);
