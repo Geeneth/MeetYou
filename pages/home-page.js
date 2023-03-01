@@ -50,15 +50,12 @@ function HomePage(props) {
       const filteredKeys = keys.filter((key) => key.includes('MeetYouLink'));
       console.log("filtered keys home page: " + filteredKeys);
       //get the values of the keys
-      let values = [];
-      filteredKeys.map((key) => {
-        const value = storage.getString(key);
-        values.push(value);
-      });      
-      //put the values into state variable socialLinks
-      // setSocialLinks(values);
-      console.log("chensklandlasdasdkasbdbn:"+values);
-      values.map((link) => {
+      keyValueArray = [];
+      for(let i=0; i<filteredKeys.length; i++){
+        keyValueArray.push([filteredKeys[i]]);
+      }     
+      console.log("chensklandlasdasdkasbdbn:"+keyValueArray);
+      keyValueArray.map((link) => {
         rawString = rawString + link[0] + "β" + link[1] + "Ω";
       });
       console.log("chensklandlasdasdkasbdbndasdasdasdasdad:"+rawString);

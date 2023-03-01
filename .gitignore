@@ -12,6 +12,7 @@ web-build/
 android/
 index.js
 metro.config.js
+ios/
 # macOS
 .DS_Store
 
@@ -67,6 +68,7 @@ buck-out/
 
 # Bundle artifacts
 *.jsbundle
+
 
 # CocoaPods
 /ios/Pods/
