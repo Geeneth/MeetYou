@@ -28,6 +28,7 @@ function Navigation() {
         },
         tabBarStyle: {
           paddingBottom: 10,
+          opacity:0,
         },
         tabBarItemStyle:{
           
@@ -35,10 +36,12 @@ function Navigation() {
         activeTintColor: "blue",
         inactiveTintColor: "grey",
       })}
-      tabBarOptions={{
+      screenOptions={{
+        headerShown:false,
         activeTintColor: "blue",
         inactiveTintColor: "grey",
         labelStyle: { paddingBottom: 15, fontSize: 10 },
+        
       }}
     >
       <Tab.Screen name="Receive" component={ReceivePage} />

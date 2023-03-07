@@ -2,7 +2,6 @@ import {
   StyleSheet,
   Text,
   View,
-  Button,
   TextInput,
   ScrollView,
 } from "react-native";
@@ -13,7 +12,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useState, useEffect } from "react";
 import { Linking } from "react-native";
 import { MMKV } from 'react-native-mmkv'
-
+import {Button, Input} from 'tamagui'
 export const storage = new MMKV()
 
 function UserInfoPage(props) {
@@ -174,13 +173,13 @@ function UserInfoPage(props) {
           {(props) => (
             // create a view to hold the form elements
             <View>
-              <TextInput
+              <Input
                 style={styles.formInput}
                 placeholder="Platform Name"
                 onChangeText={props.handleChange("platformName")}
                 value={props.values.platformName}
               />
-              <TextInput
+              <Input
                 style={styles.formInput}
                 placeholder="Link"
                 onChangeText={props.handleChange("link")}
@@ -191,7 +190,10 @@ function UserInfoPage(props) {
                 title="Submit"
                 color="maroon"
                 onPress={props.handleSubmit}
-              />
+                chromeless
+              >
+                Submit
+              </Button>
             </View>
           )}
         </Formik>
@@ -213,7 +215,7 @@ function UserInfoPage(props) {
       </View>
 
       <View style={styles.deleteButton}>
-        <Button color="black" title="Delete All" onPress={() => removeAll()} />
+        <Button color="black" title="Delete All" onPress={() => removeAll()} >Delete All1</Button>
       </View>
     </View>
   );

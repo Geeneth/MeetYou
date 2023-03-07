@@ -85,8 +85,8 @@ interface CoonsPatchMeshGradientProps {
   play?: boolean;
 }
 
-const F = 10000;
-const A = 80;
+const F = 12000;
+const A = 40;
 
 export const CoonsPatchMeshGradient = ({
   rows,
