@@ -142,16 +142,16 @@ function UserInfoPage(props) {
   return (
     <View style={styles.container}>
       <View>
-        <Text style={styles.title}>{userName}</Text>
-      </View>
-
-      <View>
-        <TextInput
-          style={styles.input}
+      <TextInput
+          style={styles.title}
           onChangeText={(text) => updateName(text)}
           value={text}
           placeholder="Enter your name"
-        />
+        />      
+      </View>
+
+      <View>
+     
       </View>
 
       {/* //map through the counter array and create a new social link button for each element */}
@@ -172,7 +172,7 @@ function UserInfoPage(props) {
         >
           {(props) => (
             // create a view to hold the form elements
-            <View>
+            <View style={styles.buttonplace}>
               <Input
                 style={styles.formInput}
                 placeholder="Platform Name"
@@ -215,7 +215,7 @@ function UserInfoPage(props) {
       </View>
 
       <View style={styles.deleteButton}>
-        <Button color="black" title="Delete All" onPress={() => removeAll()} >Delete All1</Button>
+        <Button color="black" title="Delete All" onPress={() => removeAll()} >Delete All</Button>
       </View>
     </View>
   );
@@ -293,10 +293,9 @@ const styles = StyleSheet.create({
   formInput: {
     borderWidth: 1,
     borderColor: "black",
-    padding: 10,
-    width: "80%",
     marginBottom: 10,
     borderRadius: 10,
+    
   },
   formButton: {},
   scrollArea: {
@@ -308,6 +307,7 @@ const styles = StyleSheet.create({
     width: "45%",
     borderWidth: 2,
     borderRadius: 10,
+    alignSelf: "center",
   },
   bottomUserButton: {
     marginTop: 20,
@@ -315,4 +315,8 @@ const styles = StyleSheet.create({
     bottom: 50,
     alignItems: "center",
   },
+  buttonplace: {
+
+  
+  }
 });

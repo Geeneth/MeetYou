@@ -20,6 +20,7 @@
     "@tamagui/config": "^1.7.1",
     "@tamagui/core": "^1.7.2",
     "@tamagui/font-inter": "^1.7.1",
+    "@tamagui/lucide-icons": "^1.7.7",
     "@tamagui/react-native-media-driver": "^1.7.2",
     "@tamagui/shorthands": "^1.7.2",
     "@tamagui/theme-base": "^1.7.2",

@@ -2,7 +2,6 @@ import {
   StyleSheet,
   Text,
   View,
-  Button,
   TextInput,
   Pressable,
   Image,
@@ -32,7 +31,20 @@ import { useMemo } from "react";
 import { useWindowDimensions } from "react-native";
 import { CoonsPatchMeshGradient } from "../components/gradient/aurora/components/CoonsPatchMeshGradient";
 import { MMKV } from 'react-native-mmkv';
-
+import {
+  Adapt,
+  Button,
+  Dialog,
+  Fieldset,
+  H2,
+  Input,
+  Label,
+  Paragraph,
+  Sheet,
+  TooltipSimple,
+  Unspaced,
+  YStack,
+} from 'tamagui'
 export const storage = new MMKV()
 
 const db = SQLite.openDatabase('contact90.db');
@@ -49,10 +61,18 @@ function HomePage(props) {
       //put all the keys with "MeetYouLink" into an array
       const filteredKeys = keys.filter((key) => key.includes('MeetYouLink'));
       console.log("filtered keys home page: " + filteredKeys);
-      //get the values of the keys
+      let values= [];
+      filteredKeys.map((key) => {
+        const value=storage.getString(key);
+        values.push(value);
+      });
+      //put the values into state variable
+      // setSocialLinks(values);
+      
+      //create an array of arrays with the key and value
       keyValueArray = [];
       for(let i=0; i<filteredKeys.length; i++){
-        keyValueArray.push([filteredKeys[i]]);
+        keyValueArray.push([filteredKeys[i], values[i]]);
       }     
       console.log("chensklandlasdasdkasbdbn:"+keyValueArray);
       keyValueArray.map((link) => {
@@ -199,59 +219,108 @@ function HomePage(props) {
 
   return (
     <View style={styles.container}>
-      <Text> Hello World </Text>
       {/* //button that runs getData */}
       {/* <Button title="Get Data" onPress={() => importDataHelper()} /> */}
       <View>
-        <TouchableOpacity onPress={() => setModalVisible(true)}>
-          <Image
-            style={styles.imageStyle}
-            source={require("../assets/icons/generate-qr.png")}
+        <Dialog modal>
+        <Dialog.Trigger asChild>
+        <TouchableOpacity>
+            <Image
+              style={styles.imageStyle}
+              source={require("../assets/icons/generate-qr.png")}
+            />
+          </TouchableOpacity>
+        </Dialog.Trigger>
+        <Adapt when="sm" platform="touch">
+          <Sheet zIndex={200000} modal dismissOnSnapToBottom >
+            <Sheet.Frame padding="$4" space >
+              <Adapt.Contents />
+            </Sheet.Frame>
+            <Sheet.Overlay />
+          </Sheet>
+        </Adapt>
+        <Dialog.Portal>
+          <Dialog.Overlay
+            style={styles.modalQR}
+            key="overlay"
+            animation="quick"
+            o={0.5}
+            enterStyle={{ o: 0 }}
+            exitStyle={{ o: 0 }}
           />
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => setReceiveModalVisible(true)}>
-          <Image
-            style={styles.imageStyle}
-            source={require("../assets/icons/generate-qr.png")}
+
+          <Dialog.Content
+            bordered
+            elevate
+            key="content"
+            animation={[
+              'quick',
+              {
+                opacity: {
+                  overshootClamping: true,
+                },
+              },
+            ]}
+            enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
+            exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
+            space
+          >
+            <Dialog.Title>Share QR Code</Dialog.Title>
+            <Dialog.Description>
+              Scan QR code and share with others!
+            </Dialog.Description>
+            <View style={styles.generateQRCode}>{generateQRCode()}</View>
+          </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog>
+      <Dialog modal>
+        <Dialog.Trigger asChild>
+        <TouchableOpacity>
+            <Image
+              style={styles.imageStyle}
+              source={require("../assets/icons/generate-qr.png")}
+            />
+          </TouchableOpacity>
+        </Dialog.Trigger>
+        <Adapt when="sm" platform="touch">
+          <Sheet zIndex={200000} modal dismissOnSnapToBottom >
+            <Sheet.Frame padding="$4" space >
+              <Adapt.Contents />
+            </Sheet.Frame>
+            <Sheet.Overlay />
+          </Sheet>
+        </Adapt>
+        <Dialog.Portal>
+          <Dialog.Overlay
+            style={styles.modalQR}
+            key="overlay"
+            animation="quick"
+            o={0.5}
+            enterStyle={{ o: 0 }}
+            exitStyle={{ o: 0 }}
           />
-        </TouchableOpacity>
 
-        <View>
-          <Modal
-            animationType="slide"
-            transparent={true}
-            visible={modalVisible}
-            onRequestClose={() => {
-              Alert.alert("Modal has been closed.");
-              setModalVisible(!modalVisible);
-            }}
+          <Dialog.Content
+            bordered
+            elevate
+            key="content"
+            animation={[
+              'quick',
+              {
+                opacity: {
+                  overshootClamping: true,
+                },
+              },
+            ]}
+            enterStyle={{ x: 0, y: -20, opacity: 0, scale: 0.9 }}
+            exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
+            space
           >
-            <View style={styles.centeredView}>
-              <View style={styles.modalView}>
-                <View style={styles.generateQRCode}>{generateQRCode()}</View>
-                <Pressable
-                  style={[styles.button, styles.buttonClose]}
-                  onPress={() => setModalVisible(!modalVisible)}
-                >
-                  <Text style={styles.textStyle}>Hide Modal</Text>
-                </Pressable>
-              </View>
-            </View>
-          </Modal>
-        </View>
-
-        <View>
-          <Modal
-            animationType="slide"
-            transparent={true}
-            visible={receiveModalVisible}
-            onRequestClose={() => {
-              Alert.alert("Modal has been closed.");
-              setReceiveModalVisible(!receiveModalVisible);
-            }}
-          >
-            <View style={styles.centeredView}>
-              <View style={styles.modalView}>
+            <Dialog.Title>Share QR Code</Dialog.Title>
+            <Dialog.Description>
+              Scan QR code and share with others!
+            </Dialog.Description>
+            <View style={styles.modalView}>
                 <View style={styles.scannerContainer}>
                   <View style={styles.barcodebox}>
                     <BarCodeScanner
@@ -284,17 +353,14 @@ function HomePage(props) {
                     console.log("Text TESTING OOGA BOOGA: " + text);
                     saveQr();  // Update the value of qr code in asyncstorage
                   }}  
-                />    
-                <Pressable
-                  style={[styles.button, styles.buttonClose]}
-                  onPress={() => setReceiveModalVisible(!receiveModalVisible)}
                 >
-                  <Text style={styles.textStyle}>Hide Modal</Text>
-                </Pressable>
-              </View>
-            </View>
-          </Modal>
-        </View>
+                  Save Contact
+                </Button>    
+                
+              </View>          
+            </Dialog.Content>
+        </Dialog.Portal>
+      </Dialog>
       </View>
       <View style={styles.gradient}>  
         <CoonsPatchMeshGradient
@@ -323,6 +389,7 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     alignSelf: "center",
+    
   },
   centeredView: {
     flex: 1,
@@ -332,16 +399,8 @@ const styles = StyleSheet.create({
   modalView: {
     margin: 20,
     backgroundColor: "white",
-    borderRadius: 20,
     padding: 35,
     alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
     elevation: 5,
   },
   generateQRCode: {
@@ -373,6 +432,9 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontSize: 20,
     top: 140,
+  },
+  modalQR: {
+    backgroundColor: "",
   },
 });
 
