@@ -51,7 +51,7 @@ function UserInfoPage(props) {
         values.push(value);
       });     
       //put the values into state variable socialLinks
-      setSocialLinks(values);
+      // setSocialLinks(values);
       console.log("values stored link:"+values);
       console.log("values stored link in social links:"+socialLinks);
       // map through the filteredKey and add the values to the AsyncStorage
@@ -59,6 +59,8 @@ function UserInfoPage(props) {
         let combinedString = combinedString + values[index] + "Ω";
         storage.set('combinedString', combinedString);
       });
+
+      setSocialLinks(filteredKeys.map((key, index) => [key, values[index]]));
 
       //get the user's name
       let userName =  storage.getString('MeetYouUserName');
@@ -133,10 +135,12 @@ function UserInfoPage(props) {
     try {
       // await AsyncStorage.removeItem("userInfo");
       storage.clearAll();
+      //remove everything in social links
+      setSocialLinks([]);
     } catch (e) {
       console.log(e);
     }
-    importData();
+    // importData();
   };
 
   return (
