@@ -15,6 +15,7 @@ import * as SQLite from "expo-sqlite";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import ParsedInfo from "../components/parsed-info";
 import Navigation from "./navigation";
+import {Card, CardProps} from 'tamagui'
 
 const db = SQLite.openDatabase("contact90.db");
 
@@ -114,15 +115,21 @@ export default function App() {
       <ScrollView>
         {selectContacts()}
         {contacts.map((item) => (
-          <View key={item.id} style={styles.listcontainer}>
+          <Card
+          animation="bouncy"
+          size="$4"
+          scale={0.9}
+          hoverStyle={{ scale: 0.925 }}
+          pressStyle={{ scale: 0.875 }}
+          key={item.id} style={styles.listcontainer}
+          onPress={() => openContact(item.qrcode)}
+          >
             {/* <View>
               <ParsedInfo text={item.qrcode} />
             </View> */}
-            <Text>{getName(item.qrcode)}</Text>            
-            <Button title="Open" onPress={() => openContact(item.qrcode)} />
-            <Button title="Delete" onPress={() => deleteContact(item.id)} />
+            <Text style={styles.containername}>{getName(item.qrcode)}</Text>            
             <Button title="Delete3" onPress={() => deleteAlert(item.id)} />
-          </View>
+          </Card>
         ))}
       </ScrollView>
 
@@ -159,7 +166,7 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#252424",
     paddingTop: 40,
     paddingHorizontal: 20,
   },
@@ -171,11 +178,12 @@ const styles = StyleSheet.create({
     width: "95%",
   },
   listcontainer: {
-    backgroundColor: "#fff",
+    backgroundColor: "rgba(95, 180, 249,0.3)",
     padding: 10,
     margin: 10,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#5FB4F9",
+    
   },
   modalView: {
     margin: 20,
@@ -192,5 +200,10 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
+  },
+  containername: {
+    alignSelf: "center",
+    opacity: 1,
+    fontSize: 20,
   },
 });
